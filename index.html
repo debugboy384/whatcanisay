@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Extravagance</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    #1a1a1a 0%,
+                    #080808 45%,
+                    #000 100%
+                );
+
+            color: white;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            overflow: hidden;
+        }
+
+        .intro {
+            position: fixed;
+            inset: 0;
+
+            z-index: 100;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: #050505;
+
+            cursor: pointer;
+
+            transition:
+                opacity 1s ease,
+                visibility 1s ease;
+        }
+
+        .intro.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .intro-text {
+            font-size: 28px;
+            font-weight: 400;
+
+            letter-spacing: -1px;
+
+            color: white;
+
+            transition:
+                transform 0.6s ease,
+                opacity 0.6s ease;
+        }
+
+        .intro:hover .intro-text {
+            opacity: 0.65;
+            transform: translateY(-2px);
+        }
+
+        body::before {
+            content: "";
+
+            position: fixed;
+
+            width: 500px;
+            height: 500px;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            background:
+                rgba(255,255,255,0.035);
+
+            filter: blur(140px);
+
+            border-radius: 50%;
+
+            pointer-events: none;
+        }
+
+        .floating {
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            will-change: transform;
+
+            opacity: 0;
+
+            pointer-events: auto;
+        }
+
+        .floating.visible {
+            opacity: 1;
+        }
+
+        .card {
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,0.09),
+                    rgba(255,255,255,0.035)
+                );
+
+            border:
+                1px solid
+                rgba(255,255,255,0.13);
+
+            backdrop-filter:
+                blur(25px);
+
+            -webkit-backdrop-filter:
+                blur(25px);
+
+            box-shadow:
+                0 25px 70px
+                rgba(0,0,0,0.65),
+
+                inset 0 1px
+                rgba(255,255,255,0.08);
+        }
+
+        .player {
+            width: 285px;
+
+            padding: 16px;
+
+            border-radius: 22px;
+        }
+
+        .cover {
+            width: 100%;
+
+            aspect-ratio: 1 / 1;
+
+            overflow: hidden;
+
+            border-radius: 16px;
+
+            background: #111;
+
+            border:
+                1px solid
+                rgba(255,255,255,0.12);
+
+            box-shadow:
+                0 15px 35px
+                rgba(0,0,0,0.55);
+        }
+
+        .cover img {
+            width: 100%;
+            height: 100%;
+
+            display: block;
+
+            object-fit: cover;
+        }
+
+        .info {
+            margin-top: 14px;
+        }
+
+        .song-title {
+            font-size: 17px;
+
+            font-weight: 600;
+
+            letter-spacing: -0.3px;
+        }
+
+        .artist {
+            margin-top: 4px;
+
+            color: #888;
+
+            font-size: 12px;
+        }
+
+        .progress-area {
+            margin-top: 16px;
+        }
+
+        #progress {
+            width: 100%;
+            height: 3px;
+
+            appearance: none;
+            -webkit-appearance: none;
+
+            background:
+                rgba(255,255,255,0.15);
+
+            border-radius: 20px;
+
+            cursor: pointer;
+        }
+
+        #progress::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+
+            width: 9px;
+            height: 9px;
+
+            background: white;
+
+            border-radius: 50%;
+
+            cursor: pointer;
+        }
+
+        .time {
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-top: 7px;
+
+            color: #666;
+
+            font-size: 9px;
+        }
+
+        .label {
+            text-align: center;
+
+            margin-top: 13px;
+
+            color: #444;
+
+            font-size: 7px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+        .profile {
+            width: 285px;
+
+            min-height: 285px;
+
+            padding: 16px;
+
+            border-radius: 22px;
+        }
+
+        .profile-header {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+        .pfp {
+            width: 64px;
+            height: 64px;
+
+            flex-shrink: 0;
+
+            border-radius: 16px;
+
+            overflow: hidden;
+
+            background: #111;
+
+            border:
+                1px solid
+                rgba(255,255,255,0.14);
+
+            box-shadow:
+                0 10px 25px
+                rgba(0,0,0,0.45);
+        }
+
+        .pfp img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+        .profile-name {
+            font-size: 18px;
+
+            font-weight: 600;
+
+            letter-spacing: -0.4px;
+        }
+
+        .profile-status {
+            margin-top: 5px;
+
+            font-size: 10px;
+
+            color: #666;
+        }
+
+        .description {
+            margin-top: 22px;
+
+            color: #999;
+
+            font-size: 12px;
+
+            line-height: 1.7;
+
+            letter-spacing: -0.1px;
+        }
+
+        .profile-line {
+            width: 100%;
+
+            height: 1px;
+
+            margin-top: 22px;
+
+            background:
+                rgba(255,255,255,0.08);
+        }
+
+        .profile-footer {
+            margin-top: 14px;
+
+            color: #555;
+
+            font-size: 8px;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+        .clock {
+            width: 190px;
+
+            padding: 17px 20px;
+
+            border-radius: 20px;
+
+            text-align: center;
+        }
+
+        .clock-time {
+            font-size: 25px;
+
+            font-weight: 500;
+
+            letter-spacing: -1px;
+
+            font-variant-numeric: tabular-nums;
+        }
+
+        .clock-date {
+            margin-top: 6px;
+
+            color: #777;
+
+            font-size: 9px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+        .clock-zone {
+            margin-top: 8px;
+
+            color: #444;
+
+            font-size: 7px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+        .floating-text {
+            color: rgba(255,255,255,0.42);
+
+            font-size: 12px;
+
+            font-weight: 400;
+
+            letter-spacing: -0.2px;
+
+            white-space: nowrap;
+
+            pointer-events: none;
+
+            text-shadow:
+                0 8px 25px
+                rgba(0,0,0,0.7);
+
+            user-select: none;
+
+            opacity: 0;
+
+            transition:
+                opacity 1.2s ease;
+        }
+
+        .floating-text.visible {
+            opacity: 1;
+        }
+
+        .floating-text.small {
+            font-size: 10px;
+
+            color: rgba(255,255,255,0.28);
+        }
+
+        .floating-text.large {
+            font-size: 13px;
+
+            color: rgba(255,255,255,0.48);
+        }
+
+        @media (max-width: 600px) {
+
+            .player {
+                width: 250px;
+            }
+
+            .profile {
+                width: 250px;
+            }
+
+            .pfp {
+                width: 58px;
+                height: 58px;
+            }
+
+            .description {
+                font-size: 11px;
+            }
+
+            .clock {
+                width: 170px;
+            }
+
+            .clock-time {
+                font-size: 22px;
+            }
+
+            .floating-text {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div
+        class="intro"
+        id="intro"
+    >
+        <div class="intro-text">
+            hi
+        </div>
+    </div>
+
+    <div
+        class="floating"
+        id="musicFloat"
+    >
+        <div class="card player">
+
+            <div class="cover">
+                <img
+                    src="cover.jpg"
+                    alt="Fallen Star Cover"
+                >
+            </div>
+
+            <div class="info">
+
+                <div class="song-title">
+                    Fallen Star
+                </div>
+
+                <div class="artist">
+                    The Neighbourhood
+                </div>
+
+            </div>
+
+            <div class="progress-area">
+
+                <input
+                    type="range"
+                    id="progress"
+                    value="0"
+                    min="0"
+                    max="100"
+                >
+
+                <div class="time">
+
+                    <span id="currentTime">
+                        0:00
+                    </span>
+
+                    <span id="duration">
+                        0:00
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="label">
+                Now Playing
+            </div>
+
+        </div>
+    </div>
+
+    <div
+        class="floating"
+        id="profileFloat"
+    >
+        <div class="card profile">
+
+            <div class="profile-header">
+
+                <div class="pfp">
+                    <img
+                        src="pfp.jpg"
+                        alt="Profile picture"
+                    >
+                </div>
+
+                <div>
+
+                    <div class="profile-name">
+                        6ciu
+                    </div>
+
+                    <div class="profile-status">
+                        **FUCK**
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="description">
+
+                hi, i'm 6ciu
+                <br><br>
+
+                not very active anymore but you might find me wandering
+
+            </div>
+
+            <div class="profile-line"></div>
+
+            <div class="profile-footer">
+                the feeling
+            </div>
+
+        </div>
+    </div>
+
+    <div
+        class="floating"
+        id="clockFloat"
+    >
+        <div class="card clock">
+
+            <div
+                class="clock-time"
+                id="clockTime"
+            >
+                00:00:00
+            </div>
+
+            <div
+                class="clock-date"
+                id="clockDate"
+            >
+                Loading
+            </div>
+
+            <div class="clock-zone">
+                Eastern Time
+            </div>
+
+        </div>
+    </div>
+
+    <div
+        class="floating floating-text"
+        id="text1"
+    >
+        lol
+    </div>
+
+    <div
+        class="floating floating-text large"
+        id="text2"
+    >
+        cant catch me
+    </div>
+
+    <div
+        class="floating floating-text small"
+        id="text3"
+    >
+        now you see me, now you dont
+    </div>
+
+    <div
+        class="floating floating-text large"
+        id="text4"
+    >
+        check out drift.rip/r
+    </div>
+
+    <audio
+        id="audio"
+        preload="auto"
+    >
+        <source
+            src="Fallen Star.mp3"
+            type="audio/mpeg"
+        >
+    </audio>
+
+    <script>
+        const intro =
+            document.getElementById("intro");
+
+        const audio =
+            document.getElementById("audio");
+
+        const progress =
+            document.getElementById("progress");
+
+        const currentTime =
+            document.getElementById("currentTime");
+
+        const duration =
+            document.getElementById("duration");
+
+        const musicFloat =
+            document.getElementById("musicFloat");
+
+        const profileFloat =
+            document.getElementById("profileFloat");
+
+        const clockFloat =
+            document.getElementById("clockFloat");
+
+        const floatingTexts = [
+
+            document.getElementById("text1"),
+            document.getElementById("text2"),
+            document.getElementById("text3"),
+            document.getElementById("text4")
+
+        ];
+
+        intro.addEventListener(
+            "click",
+            () => {
+
+                intro.classList.add("hidden");
+
+                musicFloat.classList.add("visible");
+                profileFloat.classList.add("visible");
+                clockFloat.classList.add("visible");
+
+                floatingTexts.forEach(
+                    text => {
+                        text.classList.add("visible");
+                    }
+                );
+
+                audio.volume = 1;
+
+                audio.play().catch(
+                    () => {}
+                );
+
+            }
+        );
+
+        function formatTime(seconds) {
+
+            if (!Number.isFinite(seconds)) {
+                return "0:00";
+            }
+
+            const minutes =
+                Math.floor(seconds / 60);
+
+            const secondsLeft =
+                Math.floor(seconds % 60)
+                .toString()
+                .padStart(2, "0");
+
+            return (
+                minutes +
+                ":" +
+                secondsLeft
+            );
+        }
+
+        audio.addEventListener(
+            "loadedmetadata",
+            () => {
+
+                duration.textContent =
+                    formatTime(audio.duration);
+
+            }
+        );
+
+        audio.addEventListener(
+            "timeupdate",
+            () => {
+
+                if (!audio.duration) {
+                    return;
+                }
+
+                progress.value =
+                    (
+                        audio.currentTime /
+                        audio.duration
+                    ) * 100;
+
+                currentTime.textContent =
+                    formatTime(
+                        audio.currentTime
+                    );
+
+            }
+        );
+
+        progress.addEventListener(
+            "input",
+            () => {
+
+                if (!audio.duration) {
+                    return;
+                }
+
+                audio.currentTime =
+                    (
+                        progress.value / 100
+                    ) * audio.duration;
+
+            }
+        );
+
+        const clockTime =
+            document.getElementById("clockTime");
+
+        const clockDate =
+            document.getElementById("clockDate");
+
+        function updateClock() {
+
+            const now =
+                new Date();
+
+            const time =
+                new Intl.DateTimeFormat(
+                    "en-US",
+                    {
+                        timeZone: "America/New_York",
+
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+
+                        hour12: true
+                    }
+                ).format(now);
+
+            const date =
+                new Intl.DateTimeFormat(
+                    "en-US",
+                    {
+                        timeZone: "America/New_York",
+
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric"
+                    }
+                ).format(now);
+
+            clockTime.textContent =
+                time;
+
+            clockDate.textContent =
+                date;
+        }
+
+        updateClock();
+
+        setInterval(
+            updateClock,
+            1000
+        );
+
+        let mouseX = -1000;
+        let mouseY = -1000;
+
+        window.addEventListener(
+            "mousemove",
+            (event) => {
+
+                mouseX =
+                    event.clientX;
+
+                mouseY =
+                    event.clientY;
+
+            }
+        );
+
+        class FloatingObject {
+
+            constructor(
+                element,
+                startX,
+                startY,
+                seed,
+                options = {}
+            ) {
+
+                this.element =
+                    element;
+
+                this.x =
+                    startX;
+
+                this.y =
+                    startY;
+
+                this.vx = 0;
+                this.vy = 0;
+
+                this.seed =
+                    seed;
+
+                this.time =
+                    seed;
+
+                this.mouseRadius =
+                    options.mouseRadius ??
+                    300;
+
+                this.mouseForce =
+                    options.mouseForce ??
+                    0.75;
+
+                this.maxSpeed =
+                    options.maxSpeed ??
+                    1.35;
+
+                this.friction =
+                    options.friction ??
+                    0.992;
+
+                this.wanderStrength =
+                    options.wanderStrength ??
+                    0.018;
+
+                this.edgeStrength =
+                    options.edgeStrength ??
+                    0.0025;
+
+            }
+
+            update() {
+
+                this.time += 0.003;
+
+                const rect =
+                    this.element
+                    .getBoundingClientRect();
+
+                const width =
+                    rect.width;
+
+                const height =
+                    rect.height;
+
+                const centerX =
+                    this.x +
+                    width / 2;
+
+                const centerY =
+                    this.y +
+                    height / 2;
+
+                const wanderX =
+                    Math.sin(
+                        this.time * 0.73 +
+                        this.seed
+                    ) *
+                    this.wanderStrength;
+
+                const wanderY =
+                    Math.cos(
+                        this.time * 0.61 +
+                        this.seed
+                    ) *
+                    this.wanderStrength;
+
+                this.vx +=
+                    wanderX;
+
+                this.vy +=
+                    wanderY;
+
+                const dx =
+                    centerX -
+                    mouseX;
+
+                const dy =
+                    centerY -
+                    mouseY;
+
+                const distance =
+                    Math.sqrt(
+                        dx * dx +
+                        dy * dy
+                    );
+
+                if (
+                    distance <
+                    this.mouseRadius &&
+                    distance > 1
+                ) {
+
+                    const proximity =
+                        1 -
+                        distance /
+                        this.mouseRadius;
+
+                    const force =
+                        proximity *
+                        proximity *
+                        this.mouseForce;
+
+                    this.vx +=
+                        (dx / distance) *
+                        force;
+
+                    this.vy +=
+                        (dy / distance) *
+                        force;
+
+                }
+
+                const padding =
+                    25;
+
+                const maxX =
+                    Math.max(
+                        padding,
+                        window.innerWidth -
+                        width -
+                        padding
+                    );
+
+                const maxY =
+                    Math.max(
+                        padding,
+                        window.innerHeight -
+                        height -
+                        padding
+                    );
+
+                if (
+                    this.x <
+                    padding
+                ) {
+
+                    this.vx +=
+                        (
+                            padding -
+                            this.x
+                        ) *
+                        this.edgeStrength;
+
+                }
+
+                if (
+                    this.x >
+                    maxX
+                ) {
+
+                    this.vx -=
+                        (
+                            this.x -
+                            maxX
+                        ) *
+                        this.edgeStrength;
+
+                }
+
+                if (
+                    this.y <
+                    padding
+                ) {
+
+                    this.vy +=
+                        (
+                            padding -
+                            this.y
+                        ) *
+                        this.edgeStrength;
+
+                }
+
+                if (
+                    this.y >
+                    maxY
+                ) {
+
+                    this.vy -=
+                        (
+                            this.y -
+                            maxY
+                        ) *
+                        this.edgeStrength;
+
+                }
+
+                this.vx *=
+                    this.friction;
+
+                this.vy *=
+                    this.friction;
+
+                const speed =
+                    Math.sqrt(
+                        this.vx * this.vx +
+                        this.vy * this.vy
+                    );
+
+                if (
+                    speed >
+                    this.maxSpeed
+                ) {
+
+                    this.vx =
+                        (
+                            this.vx /
+                            speed
+                        ) *
+                        this.maxSpeed;
+
+                    this.vy =
+                        (
+                            this.vy /
+                            speed
+                        ) *
+                        this.maxSpeed;
+
+                }
+
+                this.x +=
+                    this.vx;
+
+                this.y +=
+                    this.vy;
+
+                this.x =
+                    Math.max(
+                        padding,
+                        Math.min(
+                            this.x,
+                            maxX
+                        )
+                    );
+
+                this.y =
+                    Math.max(
+                        padding,
+                        Math.min(
+                            this.y,
+                            maxY
+                        )
+                    );
+
+                this.element.style.transform =
+                    `
+                    translate3d(
+                        ${this.x}px,
+                        ${this.y}px,
+                        0
+                    )
+                    `;
+
+            }
+
+        }
+
+        const music =
+            new FloatingObject(
+                musicFloat,
+
+                window.innerWidth *
+                0.18,
+
+                window.innerHeight *
+                0.18,
+
+                2,
+
+                {
+                    maxSpeed: 1.35,
+                    mouseRadius: 300,
+                    mouseForce: 0.75
+                }
+            );
+
+        const profile =
+            new FloatingObject(
+                profileFloat,
+
+                window.innerWidth *
+                0.62,
+
+                window.innerHeight *
+                0.58,
+
+                8,
+
+                {
+                    maxSpeed: 1.35,
+                    mouseRadius: 300,
+                    mouseForce: 0.75
+                }
+            );
+
+        const clock =
+            new FloatingObject(
+                clockFloat,
+
+                window.innerWidth *
+                0.55,
+
+                window.innerHeight *
+                0.15,
+
+                15,
+
+                {
+                    maxSpeed: 1.05,
+                    mouseRadius: 250,
+                    mouseForce: 0.55,
+                    wanderStrength: 0.014
+                }
+            );
+
+        const textObjects = [
+
+            new FloatingObject(
+                floatingTexts[0],
+
+                window.innerWidth * 0.72,
+                window.innerHeight * 0.22,
+
+                20,
+
+                {
+                    maxSpeed: 0.65,
+                    mouseRadius: 180,
+                    mouseForce: 0.35,
+                    wanderStrength: 0.010
+                }
+            ),
+
+            new FloatingObject(
+                floatingTexts[1],
+
+                window.innerWidth * 0.08,
+                window.innerHeight * 0.72,
+
+                35,
+
+                {
+                    maxSpeed: 0.75,
+                    mouseRadius: 200,
+                    mouseForce: 0.40,
+                    wanderStrength: 0.012
+                }
+            ),
+
+            new FloatingObject(
+                floatingTexts[2],
+
+                window.innerWidth * 0.72,
+                window.innerHeight * 0.76,
+
+                50,
+
+                {
+                    maxSpeed: 0.55,
+                    mouseRadius: 180,
+                    mouseForce: 0.30,
+                    wanderStrength: 0.009
+                }
+            ),
+
+            new FloatingObject(
+                floatingTexts[3],
+
+                window.innerWidth * 0.08,
+                window.innerHeight * 0.20,
+
+                65,
+
+                {
+                    maxSpeed: 0.70,
+                    mouseRadius: 200,
+                    mouseForce: 0.35,
+                    wanderStrength: 0.011
+                }
+            )
+
+        ];
+
+        const objects = [
+
+            music,
+            profile,
+            clock,
+
+            ...textObjects
+
+        ];
+
+        function animate() {
+
+            objects.forEach(
+                object => {
+                    object.update();
+                }
+            );
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }
+
+        animate();
+
+        window.addEventListener(
+            "resize",
+            () => {
+
+                objects.forEach(
+                    object => {
+
+                        const rect =
+                            object.element
+                            .getBoundingClientRect();
+
+                        const maxX =
+                            Math.max(
+                                25,
+                                window.innerWidth -
+                                rect.width -
+                                25
+                            );
+
+                        const maxY =
+                            Math.max(
+                                25,
+                                window.innerHeight -
+                                rect.height -
+                                25
+                            );
+
+                        object.x =
+                            Math.max(
+                                25,
+                                Math.min(
+                                    object.x,
+                                    maxX
+                                )
+                            );
+
+                        object.y =
+                            Math.max(
+                                25,
+                                Math.min(
+                                    object.y,
+                                    maxY
+                                )
+                            );
+
+                    }
+                );
+
+            }
+        );
+
+        window.addEventListener(
+            "load",
+            () => {
+
+                audio.volume = 1;
+
+                audio.play().catch(
+                    () => {}
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
