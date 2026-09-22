@@ -1,1361 +1,1693 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extravagance</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at center, #171717 0%, #080808 48%, #000 100%);
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 520px;
+    height: 520px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.018);
+    filter: blur(150px);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #050505;
+    cursor: pointer;
+    transition:
+        opacity 0.9s cubic-bezier(.22,.61,.36,1),
+        visibility 0.9s ease;
+}
+
+.intro.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.intro-text {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -1px;
+    color: white;
+    transition:
+        opacity 0.45s ease,
+        transform 0.45s cubic-bezier(.22,.61,.36,1);
+}
+
+.intro:hover .intro-text {
+    opacity: 0.55;
+    transform: translateY(-3px);
+}
+
+.floating {
+    position: fixed;
+    left: 0;
+    top: 0;
+    will-change: transform, opacity, filter;
+    opacity: 0;
+    filter: blur(12px);
+    pointer-events: auto;
+}
+
+.floating.visible {
+    opacity: 1;
+    filter: blur(0);
+}
+
+#musicFloat {
+    transition:
+        opacity 0.75s ease,
+        filter 0.9s cubic-bezier(.22,.61,.36,1);
+}
+
+#clockFloat {
+    transition:
+        opacity 0.8s ease,
+        filter 1s cubic-bezier(.22,.61,.36,1);
+}
+
+#profileFloat {
+    transition:
+        opacity 0.9s ease,
+        filter 1.05s cubic-bezier(.22,.61,.36,1);
+}
+
+.card {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.065),
+            rgba(255,255,255,0.028) 48%,
+            rgba(255,255,255,0.012)
+        );
+
+    border: 1px solid rgba(255,255,255,0.085);
+    border-radius: 23px;
+
+    backdrop-filter:
+        blur(34px)
+        saturate(105%);
+
+    -webkit-backdrop-filter:
+        blur(34px)
+        saturate(105%);
+
+    box-shadow:
+        0 24px 65px rgba(0,0,0,0.42),
+        0 5px 18px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.055),
+        inset 0 -1px 0 rgba(0,0,0,0.14);
+
+    transition:
+        border-color 0.35s ease,
+        background 0.35s ease;
+}
+
+.card:hover {
+    border-color: rgba(255,255,255,0.105);
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 8%;
+    width: 84%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,0.14),
+            transparent
+        );
+
+    pointer-events: none;
+}
+
+/* MUSIC */
+
+.music-stack {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: max-content;
+}
+
+.player {
+    width: 285px;
+    padding: 15px;
+    flex-shrink: 0;
+}
+
+.lyrics {
+    width: 205px;
+    height: 205px;
+    min-height: 205px;
+    max-height: 205px;
+    padding: 13px 12px;
+    flex-shrink: 0;
+}
+
+.cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 18px;
+
+    background: rgba(0,0,0,0.32);
+    border: 1px solid rgba(255,255,255,0.10);
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,0.34),
+        inset 0 1px 0 rgba(255,255,255,0.055);
+
+    transform: translateZ(0);
+
+    transition:
+        transform 0.35s cubic-bezier(.22,.61,.36,1),
+        box-shadow 0.35s ease;
+}
+
+.cover:hover {
+    transform: scale(1.008) translateY(-1px);
+
+    box-shadow:
+        0 18px 40px rgba(0,0,0,0.39),
+        inset 0 1px 0 rgba(255,255,255,0.075);
+}
+
+.cover img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    opacity: 0.94;
+
+    transform: scale(1.01);
+
+    transition:
+        transform 0.5s cubic-bezier(.22,.61,.36,1),
+        opacity 0.5s ease;
+}
+
+.cover:hover img {
+    transform: scale(1.018);
+    opacity: 0.97;
+}
+
+.cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.075),
+            transparent 40%,
+            transparent 72%,
+            rgba(0,0,0,0.16)
+        );
+
+    pointer-events: none;
+}
+
+.info {
+    margin-top: 15px;
+    padding: 0 2px;
+}
+
+.song-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.35px;
+    color: rgba(255,255,255,0.95);
+}
+
+.artist {
+    margin-top: 5px;
+    color: rgba(255,255,255,0.40);
+    font-size: 12px;
+}
+
+.progress-area {
+    margin-top: 17px;
+    padding: 0 2px;
+}
+
+#progress {
+    width: 100%;
+    height: 3px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background: rgba(255,255,255,0.105);
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+#progress::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 8px;
+    height: 8px;
+
+    background: rgba(255,255,255,0.92);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.045);
+
+    cursor: pointer;
+}
+
+#progress::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    border: 0;
+
+    background: rgba(255,255,255,0.92);
+    border-radius: 50%;
+
+    cursor: pointer;
+}
+
+.time {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+
+    color: rgba(255,255,255,0.27);
+    font-size: 9px;
+}
+
+/* LYRICS */
+
+.lyrics-label {
+    position: absolute;
+    top: 13px;
+    left: 15px;
+    z-index: 5;
+
+    color: rgba(255,255,255,0.23);
+    font-size: 7px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.lyrics-inner {
+    width: 100%;
+    height: 100%;
+
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 17%,
+            black 83%,
+            transparent 100%
+        );
+
+    -webkit-mask-image:
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 17%,
+            black 83%,
+            transparent 100%
+        );
+}
+
+.lyrics-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.lyrics-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+
+    padding:
+        69px
+        5px;
+}
+
+.lyric-line {
+    width: 100%;
+
+    text-align: center;
+
+    color: rgba(255,255,255,0.13);
+
+    font-size: 9.5px;
+    line-height: 1.55;
+    font-weight: 400;
+    letter-spacing: -0.12px;
+
+    opacity: 0.28;
+
+    transform:
+        translate3d(0, 7px, 0)
+        scale(0.91);
+
+    filter: blur(0.45px);
+
+    transition:
+        color 0.8s cubic-bezier(.22,.61,.36,1),
+        opacity 0.8s cubic-bezier(.22,.61,.36,1),
+        transform 0.8s cubic-bezier(.22,.61,.36,1),
+        filter 0.8s cubic-bezier(.22,.61,.36,1);
+}
+
+.lyric-line.previous {
+    color: rgba(255,255,255,0.20);
+    opacity: 0.42;
+
+    transform:
+        translate3d(0, 1px, 0)
+        scale(0.95);
+
+    filter: blur(0.15px);
+}
+
+.lyric-line.active {
+    color: rgba(255,255,255,0.97);
+    opacity: 1;
+
+    transform:
+        translate3d(0, 0, 0)
+        scale(1.045);
+
+    filter:
+        blur(0)
+        drop-shadow(
+            0 0 12px
+            rgba(255,255,255,0.065)
+        );
+}
+
+.lyric-line.next {
+    color: rgba(255,255,255,0.27);
+    opacity: 0.58;
+
+    transform:
+        translate3d(0, 2px, 0)
+        scale(0.97);
+
+    filter: blur(0);
+}
+
+/* PROFILE */
+
+.profile {
+    width: 285px;
+    min-height: 275px;
+    padding: 19px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.pfp {
+    position: relative;
+
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+
+    border-radius: 17px;
+    overflow: hidden;
+
+    background: rgba(0,0,0,0.30);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.10);
+
+    box-shadow:
+        0 12px 27px rgba(0,0,0,0.34),
+        inset 0 1px 0 rgba(255,255,255,0.055);
+}
+
+.pfp::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.065),
+            transparent 45%,
+            rgba(0,0,0,0.14)
+        );
+
+    pointer-events: none;
+}
+
+.pfp img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    color: rgba(255,255,255,0.95);
+}
+
+.profile-status {
+    margin-top: 5px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.31);
+}
+
+.description {
+    margin-top: 27px;
+
+    color: rgba(255,255,255,0.47);
+
+    font-size: 12px;
+    line-height: 1.75;
+    letter-spacing: -0.1px;
+}
+
+.profile-line {
+    width: 100%;
+    height: 1px;
+    margin-top: 25px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,0.075),
+            transparent
+        );
+}
+
+.profile-footer {
+    margin-top: 15px;
+
+    color: rgba(255,255,255,0.21);
+
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* CLOCK */
+
+.clock {
+    width: 165px;
+    padding: 15px 17px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.clock-time {
+    font-size: 21px;
+    font-weight: 500;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255,255,255,0.87);
+}
+
+.clock-date {
+    margin-top: 6px;
+
+    color: rgba(255,255,255,0.31);
+
+    font-size: 8px;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+}
+
+.clock-zone {
+    margin-top: 7px;
+
+    color: rgba(255,255,255,0.17);
+
+    font-size: 6px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+/* FLOATING TEXT */
+
+.floating-text {
+    color: rgba(255,255,255,0.37);
+
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+
+    white-space: nowrap;
+
+    pointer-events: none;
+    user-select: none;
+
+    padding: 7px 11px;
+    border-radius: 11px;
+
+    background:
+        rgba(255,255,255,0.025);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.06);
+
+    backdrop-filter: blur(17px);
+    -webkit-backdrop-filter: blur(17px);
+
+    box-shadow:
+        0 12px 28px
+        rgba(0,0,0,0.25);
+
+    opacity: 0;
+
+    transition:
+        opacity 1.1s ease,
+        filter 0.9s ease;
+}
+
+.floating-text.visible {
+    opacity: 1;
+    filter: blur(0);
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .music-stack {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 250px;
+        gap: 6px;
+    }
+
+    .player {
+        width: 250px;
+    }
+
+    .lyrics {
+        width: 250px;
+        height: 145px;
+        min-height: 145px;
+        max-height: 145px;
+    }
+
+    .lyrics-list {
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    .profile {
+        width: 250px;
+    }
+
+    .pfp {
+        width: 58px;
+        height: 58px;
+    }
+
+    .description {
+        font-size: 11px;
+    }
+
+    .clock {
+        width: 150px;
+    }
+
+    .clock-time {
+        font-size: 19px;
+    }
+}
+</style>
 
-    <title>Extravagance</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-        }
-
-        body {
-            min-height: 100vh;
-
-            background:
-                radial-gradient(
-                    circle at center,
-                    #1a1a1a 0%,
-                    #080808 45%,
-                    #000 100%
-                );
-
-            color: white;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            overflow: hidden;
-        }
-
-        .intro {
-            position: fixed;
-            inset: 0;
-
-            z-index: 100;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            background: #050505;
-
-            cursor: pointer;
-
-            transition:
-                opacity 1s ease,
-                visibility 1s ease;
-        }
-
-        .intro.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .intro-text {
-            font-size: 28px;
-            font-weight: 400;
-
-            letter-spacing: -1px;
-
-            color: white;
-
-            transition:
-                transform 0.6s ease,
-                opacity 0.6s ease;
-        }
-
-        .intro:hover .intro-text {
-            opacity: 0.65;
-            transform: translateY(-2px);
-        }
-
-        body::before {
-            content: "";
-
-            position: fixed;
-
-            width: 500px;
-            height: 500px;
-
-            left: 50%;
-            top: 50%;
-
-            transform:
-                translate(-50%, -50%);
-
-            background:
-                rgba(255,255,255,0.035);
-
-            filter: blur(140px);
-
-            border-radius: 50%;
-
-            pointer-events: none;
-        }
-
-        .floating {
-            position: fixed;
-
-            left: 0;
-            top: 0;
-
-            will-change: transform;
-
-            opacity: 0;
-
-            pointer-events: auto;
-        }
-
-        .floating.visible {
-            opacity: 1;
-        }
-
-        .card {
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(255,255,255,0.09),
-                    rgba(255,255,255,0.035)
-                );
-
-            border:
-                1px solid
-                rgba(255,255,255,0.13);
-
-            backdrop-filter:
-                blur(25px);
-
-            -webkit-backdrop-filter:
-                blur(25px);
-
-            box-shadow:
-                0 25px 70px
-                rgba(0,0,0,0.65),
-
-                inset 0 1px
-                rgba(255,255,255,0.08);
-        }
-
-        .player {
-            width: 285px;
-
-            padding: 16px;
-
-            border-radius: 22px;
-        }
-
-        .cover {
-            width: 100%;
-
-            aspect-ratio: 1 / 1;
-
-            overflow: hidden;
-
-            border-radius: 16px;
-
-            background: #111;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.12);
-
-            box-shadow:
-                0 15px 35px
-                rgba(0,0,0,0.55);
-        }
-
-        .cover img {
-            width: 100%;
-            height: 100%;
-
-            display: block;
-
-            object-fit: cover;
-        }
-
-        .info {
-            margin-top: 14px;
-        }
-
-        .song-title {
-            font-size: 17px;
-
-            font-weight: 600;
-
-            letter-spacing: -0.3px;
-        }
-
-        .artist {
-            margin-top: 4px;
-
-            color: #888;
-
-            font-size: 12px;
-        }
-
-        .progress-area {
-            margin-top: 16px;
-        }
-
-        #progress {
-            width: 100%;
-            height: 3px;
-
-            appearance: none;
-            -webkit-appearance: none;
-
-            background:
-                rgba(255,255,255,0.15);
-
-            border-radius: 20px;
-
-            cursor: pointer;
-        }
-
-        #progress::-webkit-slider-thumb {
-            appearance: none;
-            -webkit-appearance: none;
-
-            width: 9px;
-            height: 9px;
-
-            background: white;
-
-            border-radius: 50%;
-
-            cursor: pointer;
-        }
-
-        .time {
-            display: flex;
-
-            justify-content: space-between;
-
-            margin-top: 7px;
-
-            color: #666;
-
-            font-size: 9px;
-        }
-
-        .label {
-            text-align: center;
-
-            margin-top: 13px;
-
-            color: #444;
-
-            font-size: 7px;
-
-            letter-spacing: 2px;
-
-            text-transform: uppercase;
-        }
-
-        .profile {
-            width: 285px;
-
-            min-height: 285px;
-
-            padding: 16px;
-
-            border-radius: 22px;
-        }
-
-        .profile-header {
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-        }
-
-        .pfp {
-            width: 64px;
-            height: 64px;
-
-            flex-shrink: 0;
-
-            border-radius: 16px;
-
-            overflow: hidden;
-
-            background: #111;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.14);
-
-            box-shadow:
-                0 10px 25px
-                rgba(0,0,0,0.45);
-        }
-
-        .pfp img {
-            width: 100%;
-            height: 100%;
-
-            object-fit: cover;
-
-            display: block;
-        }
-
-        .profile-name {
-            font-size: 18px;
-
-            font-weight: 600;
-
-            letter-spacing: -0.4px;
-        }
-
-        .profile-status {
-            margin-top: 5px;
-
-            font-size: 10px;
-
-            color: #666;
-        }
-
-        .description {
-            margin-top: 22px;
-
-            color: #999;
-
-            font-size: 12px;
-
-            line-height: 1.7;
-
-            letter-spacing: -0.1px;
-        }
-
-        .profile-line {
-            width: 100%;
-
-            height: 1px;
-
-            margin-top: 22px;
-
-            background:
-                rgba(255,255,255,0.08);
-        }
-
-        .profile-footer {
-            margin-top: 14px;
-
-            color: #555;
-
-            font-size: 8px;
-
-            letter-spacing: 1.5px;
-
-            text-transform: uppercase;
-        }
-
-        .clock {
-            width: 190px;
-
-            padding: 17px 20px;
-
-            border-radius: 20px;
-
-            text-align: center;
-        }
-
-        .clock-time {
-            font-size: 25px;
-
-            font-weight: 500;
-
-            letter-spacing: -1px;
-
-            font-variant-numeric: tabular-nums;
-        }
-
-        .clock-date {
-            margin-top: 6px;
-
-            color: #777;
-
-            font-size: 9px;
-
-            letter-spacing: 1px;
-
-            text-transform: uppercase;
-        }
-
-        .clock-zone {
-            margin-top: 8px;
-
-            color: #444;
-
-            font-size: 7px;
-
-            letter-spacing: 2px;
-
-            text-transform: uppercase;
-        }
-
-        .floating-text {
-            color: rgba(255,255,255,0.42);
-
-            font-size: 12px;
-
-            font-weight: 400;
-
-            letter-spacing: -0.2px;
-
-            white-space: nowrap;
-
-            pointer-events: none;
-
-            text-shadow:
-                0 8px 25px
-                rgba(0,0,0,0.7);
-
-            user-select: none;
-
-            opacity: 0;
-
-            transition:
-                opacity 1.2s ease;
-        }
-
-        .floating-text.visible {
-            opacity: 1;
-        }
-
-        .floating-text.small {
-            font-size: 10px;
-
-            color: rgba(255,255,255,0.28);
-        }
-
-        .floating-text.large {
-            font-size: 13px;
-
-            color: rgba(255,255,255,0.48);
-        }
-
-        @media (max-width: 600px) {
-
-            .player {
-                width: 250px;
-            }
-
-            .profile {
-                width: 250px;
-            }
-
-            .pfp {
-                width: 58px;
-                height: 58px;
-            }
-
-            .description {
-                font-size: 11px;
-            }
-
-            .clock {
-                width: 170px;
-            }
-
-            .clock-time {
-                font-size: 22px;
-            }
-
-            .floating-text {
-                font-size: 10px;
-            }
-        }
-    </style>
 </head>
 
 <body>
 
-    <div
-        class="intro"
-        id="intro"
-    >
-        <div class="intro-text">
-            hi
-        </div>
-    </div>
+<div class="intro" id="intro">
+    <div class="intro-text">hi</div>
+</div>
 
-    <div
-        class="floating"
-        id="musicFloat"
-    >
-        <div class="card player">
+<div class="floating" id="musicFloat">
 
-            <div class="cover">
-                <img
-                    src="cover.jpg"
-                    alt="Fallen Star Cover"
-                >
-            </div>
+  <div class="music-stack">
 
-            <div class="info">
+    <div class="card player">
 
-                <div class="song-title">
-                    Fallen Star
-                </div>
-
-                <div class="artist">
-                    The Neighbourhood
-                </div>
-
-            </div>
-
-            <div class="progress-area">
-
-                <input
-                    type="range"
-                    id="progress"
-                    value="0"
-                    min="0"
-                    max="100"
-                >
-
-                <div class="time">
-
-                    <span id="currentTime">
-                        0:00
-                    </span>
-
-                    <span id="duration">
-                        0:00
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="label">
-                Now Playing
-            </div>
-
-        </div>
-    </div>
-
-    <div
-        class="floating"
-        id="profileFloat"
-    >
-        <div class="card profile">
-
-            <div class="profile-header">
-
-                <div class="pfp">
-                    <img
-                        src="pfp.jpg"
-                        alt="Profile picture"
-                    >
-                </div>
-
-                <div>
-
-                    <div class="profile-name">
-                        6ciu
-                    </div>
-
-                    <div class="profile-status">
-                        **FUCK**
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="description">
-
-                hi, i'm 6ciu
-                <br><br>
-
-                not very active anymore but you might find me wandering
-
-            </div>
-
-            <div class="profile-line"></div>
-
-            <div class="profile-footer">
-                the feeling
-            </div>
-
-        </div>
-    </div>
-
-    <div
-        class="floating"
-        id="clockFloat"
-    >
-        <div class="card clock">
-
-            <div
-                class="clock-time"
-                id="clockTime"
+        <div class="cover">
+            <img
+                src="cover.jpg"
+                alt="Fallen Star Cover"
             >
-                00:00:00
+        </div>
+
+        <div class="info">
+
+            <div class="song-title">
+                Fallen Star
             </div>
 
-            <div
-                class="clock-date"
-                id="clockDate"
-            >
-                Loading
-            </div>
-
-            <div class="clock-zone">
-                Eastern Time
+            <div class="artist">
+                The Neighbourhood
             </div>
 
         </div>
+
+        <div class="progress-area">
+
+            <input
+                type="range"
+                id="progress"
+                value="0"
+                min="0"
+                max="100"
+            >
+
+            <div class="time">
+
+                <span id="currentTime">
+                    0:00
+                </span>
+
+                <span id="duration">
+                    0:00
+                </span>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div
-        class="floating floating-text"
-        id="text1"
-    >
-        lol
-    </div>
+    <div class="card lyrics">
 
-    <div
-        class="floating floating-text large"
-        id="text2"
-    >
-        cant catch me
-    </div>
+        <div class="lyrics-label">
+            
+        </div>
 
-    <div
-        class="floating floating-text small"
-        id="text3"
-    >
-        now you see me, now you dont
-    </div>
-
-    <div
-        class="floating floating-text large"
-        id="text4"
-    >
-        check out drift.rip/r
-    </div>
-
-    <audio
-        id="audio"
-        preload="auto"
-    >
-        <source
-            src="Fallen Star.mp3"
-            type="audio/mpeg"
+        <div
+            class="lyrics-inner"
+            id="lyricsInner"
         >
-    </audio>
 
-    <script>
-        const intro =
-            document.getElementById("intro");
+            <div
+                class="lyrics-list"
+                id="lyricsList"
+            ></div>
 
-        const audio =
-            document.getElementById("audio");
+        </div>
 
-        const progress =
-            document.getElementById("progress");
+    </div>
 
-        const currentTime =
-            document.getElementById("currentTime");
+</div>
+  
+</div>
 
-        const duration =
-            document.getElementById("duration");
+<div class="floating" id="profileFloat">
 
-        const musicFloat =
-            document.getElementById("musicFloat");
+  <div class="card profile">
 
-        const profileFloat =
-            document.getElementById("profileFloat");
+    <div class="profile-header">
 
-        const clockFloat =
-            document.getElementById("clockFloat");
+        <div class="pfp">
+            <img
+                src="pfp.jpg"
+                alt="Profile picture"
+            >
+        </div>
 
-        const floatingTexts = [
+        <div>
 
-            document.getElementById("text1"),
-            document.getElementById("text2"),
-            document.getElementById("text3"),
-            document.getElementById("text4")
+            <div class="profile-name">
+                6ciu
+            </div>
 
-        ];
+            <div class="profile-status">
+                **FUCK**
+            </div>
 
-        intro.addEventListener(
-            "click",
-            () => {
+        </div>
 
-                intro.classList.add("hidden");
+    </div>
 
-                musicFloat.classList.add("visible");
-                profileFloat.classList.add("visible");
-                clockFloat.classList.add("visible");
+    <div class="description">
+        hi, i'm 6ciu
+        <br><br>
+        not very active anymore but you might find me wandering
+    </div>
 
-                floatingTexts.forEach(
-                    text => {
-                        text.classList.add("visible");
-                    }
-                );
+    <div class="profile-line"></div>
 
-                audio.volume = 1;
+    <div class="profile-footer">
+        the feeling
+    </div>
 
-                audio.play().catch(
-                    () => {}
-                );
+</div>
+  
+</div>
 
-            }
-        );
+<div class="floating" id="clockFloat">
 
-        function formatTime(seconds) {
+  <div class="card clock">
 
-            if (!Number.isFinite(seconds)) {
-                return "0:00";
-            }
+    <div
+        class="clock-time"
+        id="clockTime"
+    >
+        00:00 PM
+    </div>
 
-            const minutes =
-                Math.floor(seconds / 60);
+    <div
+        class="clock-date"
+        id="clockDate"
+    >
+        Loading
+    </div>
 
-            const secondsLeft =
-                Math.floor(seconds % 60)
-                .toString()
-                .padStart(2, "0");
+    <div class="clock-zone">
+        Eastern Time
+    </div>
 
-            return (
-                minutes +
-                ":" +
-                secondsLeft
+</div>
+  
+</div>
+
+<div
+    class="floating floating-text"
+    id="text1"
+>
+    hi.
+</div>
+
+<audio
+id="audio"
+preload="auto"
+
+>
+
+  <source
+  
+      src="Fallen Star.mp3"
+    type="audio/mpeg"
+>
+  
+</audio>
+
+<script>
+
+const intro = document.getElementById("intro");
+const audio = document.getElementById("audio");
+const progress = document.getElementById("progress");
+const currentTime = document.getElementById("currentTime");
+const duration = document.getElementById("duration");
+
+const musicFloat = document.getElementById("musicFloat");
+const profileFloat = document.getElementById("profileFloat");
+const clockFloat = document.getElementById("clockFloat");
+const text1 = document.getElementById("text1");
+
+const lyricsList = document.getElementById("lyricsList");
+const lyricsInner = document.getElementById("lyricsInner");
+
+const lyrics = [
+
+    [14.43, "Further apart, the closer that we are"],
+    [20.81, "I'll keep you far away from me like a star"],
+    [27.05, "Hard not to fall for you, I gave you all my heart"],
+    [33.83, "Further apart, the closer, the closer, the closer that we are"],
+
+    [55.09, "Tryna find the right time to tell you what you might not like to hear, yeah"],
+    [61.58, "I can feel the zeitgeist stuck inside the pipeline for some years, yeah"],
+    [68.84, "I wanna be your lifeline, but everybody can't be a millionaire"],
+    [74.21, "I'll be in the night sky, shinin' like a light on, always there"],
+    [80.49, "You're in my DNA, I can't get away no matter how hard I try"],
+    [86.06, "You're runnin' through my veins, somethin' I can't change"],
+    [90.08, "That's the same reason why we're"],
+
+    [94.73, "Further apart, the closer that we are"],
+    [99.87, "I'll keep you far away from me like a star"],
+    [108.93, "Hard not to fall for you, I gave you all my heart"],
+    [115.53, "Further apart, the closer, the closer, the closer that we are"],
+
+    [125.18, "2020 hindsight, lookin' from a distance, now it's clear"],
+    [129.78, "Went and found the limelight, wasn't in the vision to disappear, no"],
+    [136.66, "Now I'm in a new place, I can feel the room change when you're here"],
+    [142.90, "Had to run and do things, never meant to leave you in the rear"],
+    [149.24, "You're always in my brain, and I take the blame"],
+    [152.19, "No matter if it's wrong or right"],
+    [155.28, "I'm on a one-way train, and it's far away, but you're still on my mind"],
+
+    [164.98, "Further apart, the closer that we are"],
+    [171.18, "I'll keep you far away from me like a star"],
+    [177.64, "Hard not to fall for you, I gave you all my heart"],
+    [184.27, "Further apart, the closer, the closer, the closer that we are"],
+
+    [210.63, "The closer that we are, oh"],
+    [217.38, "The closer that we are"]
+
+];
+
+lyrics.forEach(lyric => {
+
+    const line =
+        document.createElement("div");
+
+    line.className =
+        "lyric-line";
+
+    line.textContent =
+        lyric[1];
+
+    lyricsList.appendChild(line);
+
+});
+
+const lyricElements =
+    Array.from(
+        document.querySelectorAll(".lyric-line")
+    );
+
+let activeLyric = -1;
+let lastScrolledLyric = -1;
+
+function updateLyrics(time) {
+
+    let currentIndex = -1;
+
+    for (
+        let i = 0;
+        i < lyrics.length;
+        i++
+    ) {
+
+        if (
+            time >=
+            lyrics[i][0]
+        ) {
+
+            currentIndex = i;
+
+        } else {
+
+            break;
+
+        }
+
+    }
+
+    if (
+        currentIndex ===
+        activeLyric
+    ) {
+
+        return;
+
+    }
+
+    activeLyric =
+        currentIndex;
+
+    lyricElements.forEach(
+        (element, index) => {
+
+            element.classList.remove(
+                "active",
+                "previous",
+                "next"
             );
-        }
 
-        audio.addEventListener(
-            "loadedmetadata",
-            () => {
-
-                duration.textContent =
-                    formatTime(audio.duration);
-
-            }
-        );
-
-        audio.addEventListener(
-            "timeupdate",
-            () => {
-
-                if (!audio.duration) {
-                    return;
-                }
-
-                progress.value =
-                    (
-                        audio.currentTime /
-                        audio.duration
-                    ) * 100;
-
-                currentTime.textContent =
-                    formatTime(
-                        audio.currentTime
-                    );
-
-            }
-        );
-
-        progress.addEventListener(
-            "input",
-            () => {
-
-                if (!audio.duration) {
-                    return;
-                }
-
-                audio.currentTime =
-                    (
-                        progress.value / 100
-                    ) * audio.duration;
-
-            }
-        );
-
-        const clockTime =
-            document.getElementById("clockTime");
-
-        const clockDate =
-            document.getElementById("clockDate");
-
-        function updateClock() {
-
-            const now =
-                new Date();
-
-            const time =
-                new Intl.DateTimeFormat(
-                    "en-US",
-                    {
-                        timeZone: "America/New_York",
-
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-
-                        hour12: true
-                    }
-                ).format(now);
-
-            const date =
-                new Intl.DateTimeFormat(
-                    "en-US",
-                    {
-                        timeZone: "America/New_York",
-
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric"
-                    }
-                ).format(now);
-
-            clockTime.textContent =
-                time;
-
-            clockDate.textContent =
-                date;
-        }
-
-        updateClock();
-
-        setInterval(
-            updateClock,
-            1000
-        );
-
-        let mouseX = -1000;
-        let mouseY = -1000;
-
-        window.addEventListener(
-            "mousemove",
-            (event) => {
-
-                mouseX =
-                    event.clientX;
-
-                mouseY =
-                    event.clientY;
-
-            }
-        );
-
-        class FloatingObject {
-
-            constructor(
-                element,
-                startX,
-                startY,
-                seed,
-                options = {}
+            if (
+                index <
+                currentIndex
             ) {
 
-                this.element =
-                    element;
+                element.classList.add(
+                    "previous"
+                );
 
-                this.x =
-                    startX;
+            } else if (
+                index ===
+                currentIndex
+            ) {
 
-                this.y =
-                    startY;
+                element.classList.add(
+                    "active"
+                );
 
-                this.vx = 0;
-                this.vy = 0;
+            } else if (
+                index ===
+                currentIndex + 1
+            ) {
 
-                this.seed =
-                    seed;
-
-                this.time =
-                    seed;
-
-                this.mouseRadius =
-                    options.mouseRadius ??
-                    300;
-
-                this.mouseForce =
-                    options.mouseForce ??
-                    0.75;
-
-                this.maxSpeed =
-                    options.maxSpeed ??
-                    1.35;
-
-                this.friction =
-                    options.friction ??
-                    0.992;
-
-                this.wanderStrength =
-                    options.wanderStrength ??
-                    0.018;
-
-                this.edgeStrength =
-                    options.edgeStrength ??
-                    0.0025;
+                element.classList.add(
+                    "next"
+                );
 
             }
 
-            update() {
+        }
+    );
 
-                this.time += 0.003;
+    if (
+        currentIndex >= 0 &&
+        currentIndex !== lastScrolledLyric
+    ) {
+
+        lastScrolledLyric =
+            currentIndex;
+
+        const target =
+            lyricElements[currentIndex];
+
+        const containerRect =
+            lyricsInner.getBoundingClientRect();
+
+        const targetRect =
+            target.getBoundingClientRect();
+
+        const targetCenter =
+            targetRect.top +
+            targetRect.height / 2;
+
+        const containerCenter =
+            containerRect.top +
+            containerRect.height / 2;
+
+        lyricsInner.scrollBy({
+            top:
+                targetCenter -
+                containerCenter,
+            behavior: "smooth"
+        });
+
+    }
+
+}
+
+function revealElement(element, delay) {
+
+    setTimeout(
+        () => {
+
+            element.classList.add(
+                "visible"
+            );
+
+        },
+        delay
+    );
+
+}
+
+intro.addEventListener(
+    "click",
+    () => {
+
+        intro.classList.add(
+            "hidden"
+        );
+
+        revealElement(
+            musicFloat,
+            120
+        );
+
+        revealElement(
+            clockFloat,
+            300
+        );
+
+        revealElement(
+            profileFloat,
+            480
+        );
+
+        revealElement(
+            text1,
+            680
+        );
+
+        audio.volume = 1;
+
+        audio.play().catch(
+            () => {}
+        );
+
+    }
+);
+
+function formatTime(seconds) {
+
+    if (
+        !Number.isFinite(seconds)
+    ) {
+
+        return "0:00";
+
+    }
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+    const secondsLeft =
+        Math.floor(
+            seconds % 60
+        )
+        .toString()
+        .padStart(2, "0");
+
+    return (
+        minutes +
+        ":" +
+        secondsLeft
+    );
+
+}
+
+audio.addEventListener(
+    "loadedmetadata",
+    () => {
+
+        duration.textContent =
+            formatTime(
+                audio.duration
+            );
+
+    }
+);
+
+audio.addEventListener(
+    "timeupdate",
+    () => {
+
+        if (
+            !audio.duration
+        ) {
+
+            return;
+
+        }
+
+        progress.value =
+            (
+                audio.currentTime /
+                audio.duration
+            ) *
+            100;
+
+        currentTime.textContent =
+            formatTime(
+                audio.currentTime
+            );
+
+        updateLyrics(
+            audio.currentTime
+        );
+
+    }
+);
+
+progress.addEventListener(
+    "input",
+    () => {
+
+        if (
+            !audio.duration
+        ) {
+
+            return;
+
+        }
+
+        audio.currentTime =
+            (
+                progress.value /
+                100
+            ) *
+            audio.duration;
+
+        lastScrolledLyric = -1;
+
+        updateLyrics(
+            audio.currentTime
+        );
+
+    }
+);
+
+const clockTime =
+    document.getElementById(
+        "clockTime"
+    );
+
+const clockDate =
+    document.getElementById(
+        "clockDate"
+    );
+
+function updateClock() {
+
+    const now =
+        new Date();
+
+    const time =
+        new Intl.DateTimeFormat(
+            "en-US",
+            {
+                timeZone:
+                    "America/New_York",
+
+                hour:
+                    "numeric",
+
+                minute:
+                    "2-digit",
+
+                hour12:
+                    true
+            }
+        ).format(now);
+
+    const date =
+        new Intl.DateTimeFormat(
+            "en-US",
+            {
+                timeZone:
+                    "America/New_York",
+
+                weekday:
+                    "long",
+
+                month:
+                    "short",
+
+                day:
+                    "numeric"
+            }
+        ).format(now);
+
+    clockTime.textContent =
+        time;
+
+    clockDate.textContent =
+        date;
+
+}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+let mouseX = -1000;
+let mouseY = -1000;
+
+window.addEventListener(
+    "mousemove",
+    event => {
+
+        mouseX =
+            event.clientX;
+
+        mouseY =
+            event.clientY;
+
+    }
+);
+
+class FloatingObject {
+
+    constructor(
+        element,
+        startX,
+        startY,
+        seed,
+        options = {}
+    ) {
+
+        this.element =
+            element;
+
+        this.x =
+            startX;
+
+        this.y =
+            startY;
+
+        this.vx = 0;
+        this.vy = 0;
+
+        this.seed =
+            seed;
+
+        this.time =
+            seed;
+
+        this.mouseRadius =
+            options.mouseRadius ??
+            300;
+
+        this.mouseForce =
+            options.mouseForce ??
+            0.55;
+
+        this.maxSpeed =
+            options.maxSpeed ??
+            0.95;
+
+        this.friction =
+            options.friction ??
+            0.993;
+
+        this.wanderStrength =
+            options.wanderStrength ??
+            0.012;
+
+        this.edgeStrength =
+            options.edgeStrength ??
+            0.0022;
+
+    }
+
+    update() {
+
+        this.time +=
+            0.0025;
+
+        const rect =
+            this.element.getBoundingClientRect();
+
+        const width =
+            rect.width;
+
+        const height =
+            rect.height;
+
+        const centerX =
+            this.x +
+            width / 2;
+
+        const centerY =
+            this.y +
+            height / 2;
+
+        const wanderX =
+            Math.sin(
+                this.time * 0.73 +
+                this.seed
+            ) *
+            this.wanderStrength;
+
+        const wanderY =
+            Math.cos(
+                this.time * 0.61 +
+                this.seed
+            ) *
+            this.wanderStrength;
+
+        this.vx +=
+            wanderX;
+
+        this.vy +=
+            wanderY;
+
+        const dx =
+            centerX -
+            mouseX;
+
+        const dy =
+            centerY -
+            mouseY;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        if (
+            distance <
+            this.mouseRadius &&
+            distance > 1
+        ) {
+
+            const proximity =
+                1 -
+                distance /
+                this.mouseRadius;
+
+            const force =
+                proximity *
+                proximity *
+                this.mouseForce;
+
+            this.vx +=
+                (dx / distance) *
+                force;
+
+            this.vy +=
+                (dy / distance) *
+                force;
+
+        }
+
+        const padding =
+            25;
+
+        const maxX =
+            Math.max(
+                padding,
+                window.innerWidth -
+                width -
+                padding
+            );
+
+        const maxY =
+            Math.max(
+                padding,
+                window.innerHeight -
+                height -
+                padding
+            );
+
+        if (
+            this.x <
+            padding
+        ) {
+
+            this.vx +=
+                (
+                    padding -
+                    this.x
+                ) *
+                this.edgeStrength;
+
+        }
+
+        if (
+            this.x >
+            maxX
+        ) {
+
+            this.vx -=
+                (
+                    this.x -
+                    maxX
+                ) *
+                this.edgeStrength;
+
+        }
+
+        if (
+            this.y <
+            padding
+        ) {
+
+            this.vy +=
+                (
+                    padding -
+                    this.y
+                ) *
+                this.edgeStrength;
+
+        }
+
+        if (
+            this.y >
+            maxY
+        ) {
+
+            this.vy -=
+                (
+                    this.y -
+                    maxY
+                ) *
+                this.edgeStrength;
+
+        }
+
+        this.vx *=
+            this.friction;
+
+        this.vy *=
+            this.friction;
+
+        const speed =
+            Math.sqrt(
+                this.vx * this.vx +
+                this.vy * this.vy
+            );
+
+        if (
+            speed >
+            this.maxSpeed
+        ) {
+
+            this.vx =
+                (
+                    this.vx /
+                    speed
+                ) *
+                this.maxSpeed;
+
+            this.vy =
+                (
+                    this.vy /
+                    speed
+                ) *
+                this.maxSpeed;
+
+        }
+
+        this.x +=
+            this.vx;
+
+        this.y +=
+            this.vy;
+
+        this.x =
+            Math.max(
+                padding,
+                Math.min(
+                    this.x,
+                    maxX
+                )
+            );
+
+        this.y =
+            Math.max(
+                padding,
+                Math.min(
+                    this.y,
+                    maxY
+                )
+            );
+
+        this.element.style.transform =
+            `translate3d(${this.x}px, ${this.y}px, 0)`;
+
+    }
+
+}
+
+const music =
+    new FloatingObject(
+        musicFloat,
+        window.innerWidth * 0.12,
+        window.innerHeight * 0.11,
+        2,
+        {
+            maxSpeed: 0.95,
+            mouseRadius: 300,
+            mouseForce: 0.55
+        }
+    );
+
+const profile =
+    new FloatingObject(
+        profileFloat,
+        window.innerWidth * 0.62,
+        window.innerHeight * 0.58,
+        8,
+        {
+            maxSpeed: 0.95,
+            mouseRadius: 300,
+            mouseForce: 0.55
+        }
+    );
+
+const clock =
+    new FloatingObject(
+        clockFloat,
+        window.innerWidth * 0.62,
+        window.innerHeight * 0.15,
+        15,
+        {
+            maxSpeed: 0.70,
+            mouseRadius: 240,
+            mouseForce: 0.40,
+            wanderStrength: 0.009
+        }
+    );
+
+const hi =
+    new FloatingObject(
+        text1,
+        window.innerWidth * 0.78,
+        window.innerHeight * 0.27,
+        20,
+        {
+            maxSpeed: 0.45,
+            mouseRadius: 170,
+            mouseForce: 0.25,
+            wanderStrength: 0.007
+        }
+    );
+
+const objects = [
+    music,
+    profile,
+    clock,
+    hi
+];
+
+function animate() {
+
+    objects.forEach(
+        object => {
+
+            object.update();
+
+        }
+    );
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+animate();
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        objects.forEach(
+            object => {
 
                 const rect =
-                    this.element
+                    object.element
                     .getBoundingClientRect();
-
-                const width =
-                    rect.width;
-
-                const height =
-                    rect.height;
-
-                const centerX =
-                    this.x +
-                    width / 2;
-
-                const centerY =
-                    this.y +
-                    height / 2;
-
-                const wanderX =
-                    Math.sin(
-                        this.time * 0.73 +
-                        this.seed
-                    ) *
-                    this.wanderStrength;
-
-                const wanderY =
-                    Math.cos(
-                        this.time * 0.61 +
-                        this.seed
-                    ) *
-                    this.wanderStrength;
-
-                this.vx +=
-                    wanderX;
-
-                this.vy +=
-                    wanderY;
-
-                const dx =
-                    centerX -
-                    mouseX;
-
-                const dy =
-                    centerY -
-                    mouseY;
-
-                const distance =
-                    Math.sqrt(
-                        dx * dx +
-                        dy * dy
-                    );
-
-                if (
-                    distance <
-                    this.mouseRadius &&
-                    distance > 1
-                ) {
-
-                    const proximity =
-                        1 -
-                        distance /
-                        this.mouseRadius;
-
-                    const force =
-                        proximity *
-                        proximity *
-                        this.mouseForce;
-
-                    this.vx +=
-                        (dx / distance) *
-                        force;
-
-                    this.vy +=
-                        (dy / distance) *
-                        force;
-
-                }
-
-                const padding =
-                    25;
 
                 const maxX =
                     Math.max(
-                        padding,
+                        25,
                         window.innerWidth -
-                        width -
-                        padding
+                        rect.width -
+                        25
                     );
 
                 const maxY =
                     Math.max(
-                        padding,
+                        25,
                         window.innerHeight -
-                        height -
-                        padding
+                        rect.height -
+                        25
                     );
 
-                if (
-                    this.x <
-                    padding
-                ) {
-
-                    this.vx +=
-                        (
-                            padding -
-                            this.x
-                        ) *
-                        this.edgeStrength;
-
-                }
-
-                if (
-                    this.x >
-                    maxX
-                ) {
-
-                    this.vx -=
-                        (
-                            this.x -
-                            maxX
-                        ) *
-                        this.edgeStrength;
-
-                }
-
-                if (
-                    this.y <
-                    padding
-                ) {
-
-                    this.vy +=
-                        (
-                            padding -
-                            this.y
-                        ) *
-                        this.edgeStrength;
-
-                }
-
-                if (
-                    this.y >
-                    maxY
-                ) {
-
-                    this.vy -=
-                        (
-                            this.y -
-                            maxY
-                        ) *
-                        this.edgeStrength;
-
-                }
-
-                this.vx *=
-                    this.friction;
-
-                this.vy *=
-                    this.friction;
-
-                const speed =
-                    Math.sqrt(
-                        this.vx * this.vx +
-                        this.vy * this.vy
-                    );
-
-                if (
-                    speed >
-                    this.maxSpeed
-                ) {
-
-                    this.vx =
-                        (
-                            this.vx /
-                            speed
-                        ) *
-                        this.maxSpeed;
-
-                    this.vy =
-                        (
-                            this.vy /
-                            speed
-                        ) *
-                        this.maxSpeed;
-
-                }
-
-                this.x +=
-                    this.vx;
-
-                this.y +=
-                    this.vy;
-
-                this.x =
+                object.x =
                     Math.max(
-                        padding,
+                        25,
                         Math.min(
-                            this.x,
+                            object.x,
                             maxX
                         )
                     );
 
-                this.y =
+                object.y =
                     Math.max(
-                        padding,
+                        25,
                         Math.min(
-                            this.y,
+                            object.y,
                             maxY
                         )
                     );
 
-                this.element.style.transform =
-                    `
-                    translate3d(
-                        ${this.x}px,
-                        ${this.y}px,
-                        0
-                    )
-                    `;
-
-            }
-
-        }
-
-        const music =
-            new FloatingObject(
-                musicFloat,
-
-                window.innerWidth *
-                0.18,
-
-                window.innerHeight *
-                0.18,
-
-                2,
-
-                {
-                    maxSpeed: 1.35,
-                    mouseRadius: 300,
-                    mouseForce: 0.75
-                }
-            );
-
-        const profile =
-            new FloatingObject(
-                profileFloat,
-
-                window.innerWidth *
-                0.62,
-
-                window.innerHeight *
-                0.58,
-
-                8,
-
-                {
-                    maxSpeed: 1.35,
-                    mouseRadius: 300,
-                    mouseForce: 0.75
-                }
-            );
-
-        const clock =
-            new FloatingObject(
-                clockFloat,
-
-                window.innerWidth *
-                0.55,
-
-                window.innerHeight *
-                0.15,
-
-                15,
-
-                {
-                    maxSpeed: 1.05,
-                    mouseRadius: 250,
-                    mouseForce: 0.55,
-                    wanderStrength: 0.014
-                }
-            );
-
-        const textObjects = [
-
-            new FloatingObject(
-                floatingTexts[0],
-
-                window.innerWidth * 0.72,
-                window.innerHeight * 0.22,
-
-                20,
-
-                {
-                    maxSpeed: 0.65,
-                    mouseRadius: 180,
-                    mouseForce: 0.35,
-                    wanderStrength: 0.010
-                }
-            ),
-
-            new FloatingObject(
-                floatingTexts[1],
-
-                window.innerWidth * 0.08,
-                window.innerHeight * 0.72,
-
-                35,
-
-                {
-                    maxSpeed: 0.75,
-                    mouseRadius: 200,
-                    mouseForce: 0.40,
-                    wanderStrength: 0.012
-                }
-            ),
-
-            new FloatingObject(
-                floatingTexts[2],
-
-                window.innerWidth * 0.72,
-                window.innerHeight * 0.76,
-
-                50,
-
-                {
-                    maxSpeed: 0.55,
-                    mouseRadius: 180,
-                    mouseForce: 0.30,
-                    wanderStrength: 0.009
-                }
-            ),
-
-            new FloatingObject(
-                floatingTexts[3],
-
-                window.innerWidth * 0.08,
-                window.innerHeight * 0.20,
-
-                65,
-
-                {
-                    maxSpeed: 0.70,
-                    mouseRadius: 200,
-                    mouseForce: 0.35,
-                    wanderStrength: 0.011
-                }
-            )
-
-        ];
-
-        const objects = [
-
-            music,
-            profile,
-            clock,
-
-            ...textObjects
-
-        ];
-
-        function animate() {
-
-            objects.forEach(
-                object => {
-                    object.update();
-                }
-            );
-
-            requestAnimationFrame(
-                animate
-            );
-
-        }
-
-        animate();
-
-        window.addEventListener(
-            "resize",
-            () => {
-
-                objects.forEach(
-                    object => {
-
-                        const rect =
-                            object.element
-                            .getBoundingClientRect();
-
-                        const maxX =
-                            Math.max(
-                                25,
-                                window.innerWidth -
-                                rect.width -
-                                25
-                            );
-
-                        const maxY =
-                            Math.max(
-                                25,
-                                window.innerHeight -
-                                rect.height -
-                                25
-                            );
-
-                        object.x =
-                            Math.max(
-                                25,
-                                Math.min(
-                                    object.x,
-                                    maxX
-                                )
-                            );
-
-                        object.y =
-                            Math.max(
-                                25,
-                                Math.min(
-                                    object.y,
-                                    maxY
-                                )
-                            );
-
-                    }
-                );
-
             }
         );
 
-        window.addEventListener(
-            "load",
-            () => {
+    }
+);
 
-                audio.volume = 1;
-
-                audio.play().catch(
-                    () => {}
-                );
-
-            }
-        );
-
-    </script>
+</script>
 
 </body>
 </html>
